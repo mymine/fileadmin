@@ -1,6 +1,8 @@
 <?php
+require "path.php";
 require "config.php";
 $path = isset($_GET['path']) ? trim($_GET['path']) : OPEN;
+$zl = getFileUrl($path);
 if ($path == "" || !is_dir($path)) $path = OPEN;
 $filesystem = new filesystem($path);
 if (!isset($_GET['multiple'])) {
@@ -25,22 +27,11 @@ echo "</form>\n";
 echo "</div>\n";
 echo "<div class=\"love\">\n";
 if (function_exists("disk_total_space") && function_exists("disk_free_space")) {
-    echo "分区大小:" . ___filesize(disk_total_space($path)) . "&ensp;&ensp;空闲空间:" . ___filesize(disk_free_space($path)) . "<br />";
+    echo "分区大小:" . ___filesize(disk_total_space($path)) . "&nbsp;&nbsp;空闲空间:" . ___filesize(disk_free_space($path)) . "<br />";
 }
-if ($disks = ___windowsdisk()) {
-    echo "盘符切换:";
-    foreach ($disks as $disk) {
-        $diskurl = "?path=" . urlencode($disk);
-        if ($multiple != null) {
-            $diskurl .= $multiple;
-        }
-        echo sprintf("-&gt;<a href=\"%s\">%s</a>&ensp;", $diskurl, $disk);
-    }
-    echo "<br>\n";
-}
-echo "浏览路径:[<a href=\"?path=" . urlencode(___realpath($path . "/..")) . "$multiple\">UP</a>]&ensp;&ensp;" . ___shortpath(___realpath($path));
-if ($multiple != null) echo "&ensp;&ensp;[<a href=\"./multiple.php?type={$_GET['multiple']}&gopath=" . urlencode($path) . "\">选定</a>|<a href=\"./index.php?path=" . urlencode($path) . "\">关闭</a>]";
-echo "&ensp;&ensp;[<a href=\"{$_SERVER['SCRIPT_NAME']}?{$_SERVER['QUERY_STRING']}&logout\">Logout</a>]\n";
+echo "浏览路径:[<a href=\"?path=" . urlencode(___realpath($path . "/..")) . "$multiple\">UP</a>]&nbsp;&nbsp;" . ___shortpath(___realpath($path));
+if ($multiple != null) echo "&nbsp;&nbsp;[<a href=\"./multiple.php?type={$_GET['multiple']}&gopath=" . urlencode($path) . "\">选定</a>|<a href=\"./index.php?path=" . urlencode($path) . "\">关闭</a>]";
+echo "&nbsp;&nbsp;[<a href=\"{$_SERVER['SCRIPT_NAME']}?{$_SERVER['QUERY_STRING']}&logout\">Logout</a>]\n";
 echo "\n</div>\n";
 if (($data = $filesystem->getpath()) === false) {
     echo "<div class=\"error\">抱歉，系统无法获取对应目录内容！</div>\n";
@@ -59,7 +50,7 @@ if (($data = $filesystem->getpath()) === false) {
     echo "<option value=\"upload\">本地远程（上传）</option>\n";
     echo "<option value=\"addlist\">文件清单（加入）</option>\n";
     echo "<option value=\"sendfile\">发送文件（邮箱）</option>\n";
-    if (function_exists("shell_exec") || (function_exists("proc_open") && function_exists("stream_get_contents") && php_uname("s") == "Linux")) {
+    if (function_exists("shell_exec")) {
         echo "<option value=\"shell_exec\">终端命令（高级）</option>\n";
     }
     echo "</select>\n";
@@ -81,7 +72,7 @@ if (($data = $filesystem->getpath()) === false) {
     echo "<option value=\"upload\">本地远程（上传）</option>\n";
     echo "<option value=\"addlist\">文件清单（加入）</option>\n";
     echo "<option value=\"sendfile\">发送文件（邮箱）</option>\n";
-    if (function_exists("proc_open") || function_exists("shell_exec")) {
+    if (function_exists("shell_exec")) {
         echo "<option value=\"shell_exec\">终端命令（高级）</option>\n";
     }
     echo "</select>\n";
@@ -96,7 +87,7 @@ if (($data = $filesystem->getpath()) === false) {
             echo "<input type=\"checkbox\" name=\"flist[]\" value=\"" . urlencode($tmp) . "\" $select/>\n";
             echo ($perms = $filesystem->getperms()) == false ? "[????]" : "[$perms]";
             echo "<a href=\"?path=" . urlencode($tmp) . "$multiple\">" . ___basename($tmp) . "</a>\n";
-            if (is_link($tmp)) echo "[&ensp;Link&ensp;-&gt;&ensp;" . readlink($tmp) . "&ensp;]";
+            if (is_link($tmp)) echo "[&nbsp;Link&nbsp;-&gt;&nbsp;" . readlink($tmp) . "&nbsp;]";
             echo "（<a href=\"./rename.php?path=" . urlencode($tmp) . "\">命名</a>|<a href=\"./autocp.php?path=" . urlencode($tmp) . "\">复件</a>）\n";
             echo "</div>\n";
         }
@@ -121,9 +112,9 @@ if (($data = $filesystem->getpath()) === false) {
             } else {
                 echo "<a href=\"./view.php?path=" . urlencode($tmp) . "\">查看</a>";
             }
-            echo "|<a href=\"./editor.php?path=" . urlencode($tmp) . "\">编辑</a>|<a href=\"./rename.php?path=" . urlencode($tmp) . "\">命名</a>|<a href=\"./autocp.php?path=" . urlencode($tmp) . "\">复件</a>|<a href=\"./autopk.php?path=" . urlencode($tmp) . "\">压缩</a>\n";
-            if (is_link($tmp)) echo "<br />\n链接指向&ensp;:&ensp;" . readlink($tmp) . "\n";
-            if ($finfo = $filesystem->getfinfo()) echo "\n<br />\n档案信息&ensp;:&ensp;$finfo\n";
+            echo "|<a href=\"./editor.php?path=" . urlencode($tmp) . "\">编辑</a>|<a href=\"./rename.php?path=" . urlencode($tmp) . "\">命名</a>|<a href=\"./autocp.php?path=" . urlencode($tmp) . "\">复件</a>|<a href=\"./autopk.php?path=" . urlencode($tmp) . "\">压缩</a>|<a href=\"http://{$host}$zl" . ___basename($tmp) . "\">直连</a>\n";
+            if (is_link($tmp)) echo "<br />\n链接指向&nbsp;:&nbsp;" . readlink($tmp) . "\n";
+            if ($finfo = $filesystem->getfinfo()) echo "\n<br />\n档案信息&nbsp;:&nbsp;$finfo\n";
             echo "</div>\n";
         }
     }
